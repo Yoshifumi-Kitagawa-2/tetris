@@ -104,21 +104,20 @@ void my_fall_block(){
 }
 
 int main(){
-	int stop = 0;
 
 	my_init_var();
-
-	while(1){
-		my_clear_field();
-		my_make_block();
-		my_make_field();
-		my_draw_field();
-		my_fall_block();
-
-		if(block_y > 17)break;
-	}
+    my_clear_field();
+    my_make_block();
+    my_make_field();
+    my_draw_field();
+    my_fall_block();
+    my_clear_field();
+    my_make_block();
+    my_make_field();
+    my_draw_field();
 	return 0;
 }
+
 
 
 
