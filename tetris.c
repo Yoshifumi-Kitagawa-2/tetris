@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "tetris.h"
 
 int block[BLOCK_HEIGHT][BLOCK_WIDTH];
@@ -103,19 +101,32 @@ void my_fall_block(){
     block_y++;
 }
 
-int main(){
+/*四日目　当たり判定*/
+/*今回は横に移動するのと壁の当たり判定を確認する所までやっていきたいと思います*/
+/*
+キー入力
+まずは横に動かすためのキー入力の簡単なプログラムを作ってみます。
+実行すると入力待ちの無限ループになりますので矢印キーの左か右を押してください！
+*/
 
-	my_init_var();
-    my_clear_field();
-    my_make_block();
-    my_make_field();
-    my_draw_field();
-    my_fall_block();
-    my_clear_field();
-    my_make_block();
-    my_make_field();
-    my_draw_field();
-	return 0;
+int main(){
+    int key;
+    int flag = 1;
+
+	while(flag){
+		if(kbhit()){
+			key = getch();
+			if(key == 0xe0)key = getch();
+			flag = 0;
+		}
+	}
+    switch(key){
+        case 0x48: printf("↑"); break;
+        case 0x50: printf("↓"); break;
+        case 0x4b: printf("←"); break;
+        case 0x4d: printf("→"); break;
+	}
+    return(0);
 }
 
 
