@@ -18,6 +18,9 @@ int block_x;
 /*ブロックの縦位置*/
 int block_y;
 
+/*当たり判定*/
+int collision_flag;
+
 /*まずは変数などを初期化*/
 void my_init_var(){
     int i,j;
@@ -64,7 +67,7 @@ void my_make_field(){
 		for(x=0;x<BLOCK_WIDTH;x++){
 			field[block_y + y][block_x + x] += block[y][x];
 		}
-	}	
+	}
 }
 
 /*画面表示*/
@@ -109,26 +112,80 @@ void my_fall_block(){
 実行すると入力待ちの無限ループになりますので矢印キーの左か右を押してください！
 */
 
-int main(){
-    int key;
-    int flag = 1;
+/*①ブロックの左側の当たり判定を調べる「my_collision_left()」*/
+void my_collision_left()
+{
+	int x,y;
 
-	while(flag){
-		if(kbhit()){
-			key = getch();
-			if(key == 0xe0)key = getch();
-			flag = 0;
+	collision_flag = 0;
+	for(y=0; y<BLOCK_HEIGHT;y++){
+		for(x=0;x<BLOCK_WIDTH;x++){
+			if (block[y][x] != 0){
+				if(stage[block_y + y][block_x + (x - 1)] != 0){
+					collision_flag = 1;
+			}
 		}
 	}
-    switch(key){
-        case 0x48: printf("↑"); break;
-        case 0x50: printf("↓"); break;
-        case 0x4b: printf("←"); break;
-        case 0x4d: printf("→"); break;
-	}
-    return(0);
+}
 }
 
+void my_collision_right(){
+	int x,y;
 
+	collision_flag = 0;
+	for(y=0; y<BLOCK_HEIGHT;y++){
+		for(x=0;x<BLOCK_WIDTH;x++){
+			if (block[y][x] != 0){
+				if(stage[block_y + y][block_x + (x + 2)] != 0){
+					collision_flag = 1;
+			}
+		}
+	}
+}
+}
 
+/*キー入力に当たり判定を組み込む*/
+void my_get_key(){
+	switch(getche())
+   {
+    case 0x1b:
+    switch(getche())
+    {
+			case 0x5b:
+			switch(getche()){
+			        case 0x41: printf("↑\n"); break;
+		            case 0x42: printf("↓\n"); break;
+		            case 0x44: 
+						my_collision_left();
+						if(collision_flag == 0){
+							block_x--;
+						}
+						break;
+		            case 0x43: 
+						my_collision_right();
+						if(collision_flag == 0){
+							block_x++;
+						}
+						break;
+			}
+    }
+    break;
+   }
+}
+
+int main(){
+
+	my_init_var();
+
+	while(1){
+		my_clear_field();
+		my_make_block();
+		my_get_key();
+		my_make_field();
+		my_draw_field();
+		my_fall_block();
+		if(block_y > 17)break;
+	}	
+	return 0;
+}
 
