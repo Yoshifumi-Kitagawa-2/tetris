@@ -5,12 +5,50 @@ int stage[FIELD_HEIGHT][FIELD_WIDTH];
 int field[FIELD_HEIGHT][FIELD_WIDTH];
 
 /*最初は四角いブロックのみ*/
+/*
 int blocks[BLOCK_HEIGHT][BLOCK_WIDTH] = {
 	{0,0,0,0},
 	{0,1,1,0},
 	{0,1,1,0},
 	{0,0,0,0}
 };
+*/
+
+/*ブロックの種類を増やす*/
+int blocks[BLOCK_HIGHT *6][BLOCK_WIDTH *4] = {
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0},
+	{0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,1,1,0,0,0,1,0,0,1,0,0,0,1,1,0},
+	{0,0,1,0,0,1,1,0,0,1,1,0,0,1,0,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,1,1,0,0,1,1,0,0,0,1,0,0,1,0,0},
+	{0,1,0,0,0,0,1,0,0,1,1,0,0,1,1,0},
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,1,0,1,0,0,1,1,0,0,0,0,0,1,1,0},
+	{0,1,1,1,0,0,1,0,0,1,1,1,0,0,1,0},
+	{0,0,0,0,0,0,1,1,0,1,0,1,0,1,1,0},
+
+	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0},
+	{0,1,1,0,1,1,1,0,1,1,0,0,1,1,1,0},
+	{0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0},
+
+	{0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
+	{0,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1},
+	{0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
+	{0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0}
+}
+
+/*現在のブロックの種類を表す変数*/
+int block_id;
 
 /*ブロックの横位置*/
 int block_x;
@@ -20,6 +58,12 @@ int block_y;
 
 /*当たり判定*/
 int collision_flag;
+
+/*my_make_block()」にブロックを生成するかどうかのフラグ*/
+int make_block_flag;
+
+/*ゲームオーバーしたかどうかの判定*/
+int gameover_flag;
 
 /*まずは変数などを初期化*/
 void my_init_var(){
@@ -40,16 +84,9 @@ void my_init_var(){
     }
     block_x = 7;
 	block_y = 0;
-}
-
-/*ブロックを登録*/
-void my_make_block(){
-    int x,y;
-    for(y=0;y<BLOCK_HEIGHT;y++){
-		for(x=0;x<BLOCK_WIDTH;x++){
-			block[y][x] = blocks[y][x];
-		}
-	}
+	make_block_flag = 1;
+	
+	srand((unsigned)time(NULL))
 }
 
 /*重ね合わせる*/
@@ -101,7 +138,9 @@ void my_clear_field(){
 }
 
 void my_fall_block(){
-    block_y++;
+	if(make_block_flag == 0){
+		block_y++;
+	}
 }
 
 /*四日目　当たり判定*/
@@ -118,30 +157,39 @@ void my_collision_left()
 	int x,y;
 
 	collision_flag = 0;
-	for(y=0; y<BLOCK_HEIGHT;y++){
-		for(x=0;x<BLOCK_WIDTH;x++){
-			if (block[y][x] != 0){
-				if(stage[block_y + y][block_x + (x - 1)] != 0){
+	for(y=0; y<BLOCK_HEIGHT;y++)
+	{
+		for(x=0;x<BLOCK_WIDTH;x++)
+		{
+			if (block[y][x] != 0)
+			{
+				if(stage[block_y + y][block_x + (x - 1)] != 0)
+				{
 					collision_flag = 1;
+				}
 			}
 		}
 	}
 }
-}
 
-void my_collision_right(){
+void my_collision_right()
+{
 	int x,y;
 
 	collision_flag = 0;
-	for(y=0; y<BLOCK_HEIGHT;y++){
-		for(x=0;x<BLOCK_WIDTH;x++){
-			if (block[y][x] != 0){
-				if(stage[block_y + y][block_x + (x + 2)] != 0){
+	for(y=0; y<BLOCK_HEIGHT;y++)
+	{
+		for(x=0;x<BLOCK_WIDTH;x++)
+		{
+			if (block[y][x] != 0)
+			{
+				if(stage[block_y + y][block_x + (x + 1)] != 0)
+				{
 					collision_flag = 1;
+				}
 			}
 		}
 	}
-}
 }
 
 /*キー入力に当たり判定を組み込む*/
@@ -173,19 +221,149 @@ void my_get_key(){
    }
 }
 
+
+/*五日目 当たり判定*/
+
+/*底辺の当たり判定*/
+void my_collision_bottom()
+{
+	int x,y;
+
+	collision_flag = 0;
+	for(y=0; y<BLOCK_HEIGHT;y++)
+	{
+		for(x=0;x<BLOCK_WIDTH;x++)
+		{
+			if (block[y][x] != 0)
+			{
+				if(stage[block_y + (y + 1)][block_x + x] != 0)
+				{
+					collision_flag = 1;
+				}
+			}
+		}
+	}
+}
+/*ブロック再生成*/
+/*今回からブロックが固定された後にブロックが再生成されるのでその処理を加えたいと思います。*/
+/*
+void my_make_block()
+{
+	int x,y;
+
+	if(make_block_flag == 1)
+	{
+		for(y=0;y<BLOCK_HEIGHT;y++)
+		{
+			for(x=0;x<BLOCK_WIDTH;x++)
+			{
+				block[y][x] = blocks[y][x];
+			}
+		}
+		make_block_flag = 0;
+	}
+}
+*/
+
+/*ブロック固定の手順*/
+/*
+１・底辺の当たり判定を調べる
+２・当たり判定があれば現在の「block」の状態を「stage」に保存する
+３・ブロックの座標を元に戻す
+*/
+/*blockをstageに保存する*/
+void my_save_block(){
+	int x,y;
+
+	for(y=0;y<BLOCK_HEIGHT;y++){
+		for(x=0;x<BLOCK_WIDTH;x++){
+			stage[block_y + y][block_x + x] += block[y][x];
+		}
+	}
+}
+
+/*ブロックの座標を元に戻す*/
+void my_init_var2(){
+	block_x = 7;
+	block_y = 0;
+	make_block_flag = 1;
+}
+
+/*ブロックの固定*/
+void my_fix_block(){
+	int x,y;
+
+	my_collision_bottom();
+
+	if(collision_flag != 0){
+		my_save_block();
+		my_init_var2();
+	}
+}
+
+/*ゲームオーバを作成*/
+/*ブロックパズルにおいてのゲームオーバーの条件はブロック再生成時に
+そこにすでにあるブロックと重なってしまった場合なので、
+まずは重なった場合の当たり判定用関数を作ります。*/
+void my_collision_center(){
+	int x,y;
+
+	collision_flag = 0;
+	for(y=0;y<BLOCK_HEIGHT;y++){
+		for(x=0;x<BLOCK_WIDTH;x++){
+			if(block[y][x] != 0){
+				if(stage[block_y + y][block_x + x] != 0){
+					collision_flag = 1;
+				}
+			}
+		}
+	}
+}
+void my_gameover(){
+	my_collision_center();
+
+	if(collision_flag != 0){
+		gameover_flag = 1;
+	}
+}
+
+/*六日目*/
+/*ブロック消去*/
+/*今回からこのブロックの元の２次元配列からランダムにブロックを取り出してみたいと思います。*/
+void my_make_block()
+{
+	int x,y;
+
+	if(make_block_flag == 1)
+	{
+		block_id = (rand() % 6);
+		for(y=0;y<BLOCK_HEIGHT;y++)
+		{
+			for(x=0;x<BLOCK_WIDTH;x++)
+			{
+				block[y][x] = blocks[(block_id * BLOCK_HEIGHT) + y][x];
+			}
+		}
+		make_block_flag = 0;
+	}
+}
+
+
 int main(){
 
 	my_init_var();
 
-	while(1){
+	while(gameover_flag == 0){
 		my_clear_field();
 		my_make_block();
+		my_gameover();
 		my_get_key();
 		my_make_field();
+		my_fix_block();
 		my_draw_field();
 		my_fall_block();
-		if(block_y > 17)break;
-	}	
+	}
+	printf("gameover\n");		
 	return 0;
 }
 
