@@ -15,7 +15,7 @@ int blocks[BLOCK_HEIGHT][BLOCK_WIDTH] = {
 */
 
 /*ブロックの種類を増やす*/
-int blocks[BLOCK_HIGHT *6][BLOCK_WIDTH *4] = {
+int blocks[24][16] = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0},
 	{0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0},
@@ -45,7 +45,7 @@ int blocks[BLOCK_HIGHT *6][BLOCK_WIDTH *4] = {
 	{0,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1},
 	{0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0},
 	{0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0}
-}
+};
 
 /*現在のブロックの種類を表す変数*/
 int block_id;
@@ -64,6 +64,20 @@ int make_block_flag;
 
 /*ゲームオーバーしたかどうかの判定*/
 int gameover_flag;
+
+/*グローバル変数に揃った列の場所を入れる為の変数*/
+int clear_line_point[20];
+
+/*クリア状態かどうかのフラグ*/
+int clear_flag;
+
+int clear_count;
+
+/*グローバル変数として回転状態を表す変数*/
+int turn_point;
+
+/*回転後のブロックを表す*/
+int turn_block[BLOCK_HEIGHT][BLOCK_WIDTH];
 
 /*まずは変数などを初期化*/
 void my_init_var(){
@@ -84,9 +98,13 @@ void my_init_var(){
     }
     block_x = 7;
 	block_y = 0;
+	collision_flag = 0;
+	gameover_flag = 0;
 	make_block_flag = 1;
-	
-	srand((unsigned)time(NULL))
+	clear_flag = 0;
+	block_id = 0;
+	clear_count = 0;
+	srand((unsigned int)time(NULL));
 }
 
 /*重ね合わせる*/
@@ -103,6 +121,16 @@ void my_make_field(){
 	for(y=0;y<BLOCK_HEIGHT;y++){
 		for(x=0;x<BLOCK_WIDTH;x++){
 			field[block_y + y][block_x + x] += block[y][x];
+		}
+	}
+}
+
+void my_make_field2(){
+	int i,j;
+
+	for(i=0;i<FIELD_HEIGHT;i++){
+		for(j=0;j<FIELD_WIDTH;j++){
+			field[i][j] = stage[i][j];	
 		}
 	}
 }
@@ -289,6 +317,31 @@ void my_init_var2(){
 	make_block_flag = 1;
 }
 
+void my_search_line()
+{
+	int i,j;
+
+	for(i=0;i<FIELD_HEIGHT - 3;i++){
+		clear_line_point[i] = 0;
+	}
+
+	for(i=0;i<FIELD_HEIGHT - 3;i++){
+		for(j=3;j<FIELD_WIDTH - 3;j++){
+			if(stage[i][j] == 0){
+				clear_line_point[i] = 1;
+				break;
+			}
+		}
+	}
+
+	for(i=0;i<FIELD_HEIGHT - 3;i++){
+		if(clear_line_point[i] == 0){
+			clear_flag = 1;
+			break;
+		}
+	}
+}
+
 /*ブロックの固定*/
 void my_fix_block(){
 	int x,y;
@@ -297,7 +350,10 @@ void my_fix_block(){
 
 	if(collision_flag != 0){
 		my_save_block();
-		my_init_var2();
+		my_search_line();
+		if (clear_flag == 0){
+			my_init_var2();
+		}
 	}
 }
 
@@ -348,6 +404,97 @@ void my_make_block()
 	}
 }
 
+/*消去する列を探す*/
+
+/*クリアして表示*/
+/*まずは揃った列の部分をクリアして表示したいので、その列を空白を表す「0」に置き換えます。*/
+void my_clear_line()
+{
+	int i,j;
+	int remain_line_point[20] = {0};
+	int remain_line_index = 0;
+	/*clear_line_point[i] == 0」の場所がクリアすべき列になりますね。そこを空白を表す「0」に全て置き換えます。*/
+	if(clear_count < 2){
+		for(i=0;i<FIELD_HEIGHT - 3;i++){
+			if(clear_line_point[i] == 0){
+				for(j=3;j<FIELD_WIDTH - 3;j++){
+					stage[i][j] = 0;
+				}
+			}
+		}
+		clear_count++;
+	}
+	else{
+		for(i=FIELD_HEIGHT - 4;i >= 0;i--){
+			if(clear_line_point[i] != 0){
+				remain_line_point[remain_line_index] = i;
+				remain_line_index++;
+			}
+		}
+		remain_line_index = 0;
+		for(i=FIELD_HEIGHT - 4;i >= 0;i--){
+			for(j=3;j<FIELD_WIDTH - 3;j++){
+				stage[i][j] = stage[remain_line_point[remain_line_index]][j];
+			}
+			remain_line_index++;
+		}
+		clear_flag = 0;
+		clear_count = 0;
+		my_init_var2();
+	}
+}
+
+void my_timer(){
+	int x,y;
+	for(y=0;y<10000;y++){
+		for(x=0;x<10000;x++){
+		}
+	}
+}
+
+void my_collision_turn(){
+	int x,y;
+
+	collision_flag = 0;
+
+	for(y=0;y<BLOCK_HEIGHT;y++){
+		for(x=0;x<BLOCK_WIDTH;x++){
+			if(turn_block[y][x] != 0){
+				if(stage[block_y + y][block_x + x] != 0){
+					collision_flag = 1;
+				}
+			}
+		}
+	}
+}
+
+void my_turn_right(){
+	int x,y;
+
+	turn_point++;
+	
+	for(y=0;y<BLOCK_HEIGHT;y++){
+		for(x=0;x<BLOCK_WIDTH;x++){
+			turn_block[y][x] = 
+				blocks[(block_id * BLOCK_HEIGHT) + y][(turn_point % 4 * BLOCK_WIDTH) + x];
+		}
+	}
+
+	my_collision_turn();
+
+	if(collision_flag == 0){
+		for(y=0;y<BLOCK_HEIGHT;y++){
+			for(x=0;x<BLOCK_WIDTH;x++){
+				block[y][x] = turn_block[y][x];
+			}
+		}
+	}
+	else{
+		turn_point--;
+	}
+}
+
+
 
 int main(){
 
@@ -355,13 +502,21 @@ int main(){
 
 	while(gameover_flag == 0){
 		my_clear_field();
-		my_make_block();
-		my_gameover();
-		my_get_key();
-		my_make_field();
-		my_fix_block();
+
+		if(clear_flag == 0){
+			my_make_block();
+			my_gameover();
+			my_get_key();
+			my_make_field();
+			my_fix_block();
+			my_fall_block();
+		}
+		else{
+			my_clear_line();
+			my_make_field2();
+		}
 		my_draw_field();
-		my_fall_block();
+		my_timer();
 	}
 	printf("gameover\n");		
 	return 0;
