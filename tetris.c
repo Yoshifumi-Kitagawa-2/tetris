@@ -219,8 +219,8 @@ void my_collision_right()
 		}
 	}
 }
-
 /*キー入力に当たり判定を組み込む*/
+/*
 void my_get_key(){
 	switch(getche())
    {
@@ -229,8 +229,9 @@ void my_get_key(){
     {
 			case 0x5b:
 			switch(getche()){
-			        case 0x41: printf("↑\n"); break;
-		            case 0x42: printf("↓\n"); break;
+			        case 0x41: 
+						my_turn_right();
+						break;
 		            case 0x44: 
 						my_collision_left();
 						if(collision_flag == 0){
@@ -248,6 +249,7 @@ void my_get_key(){
     break;
    }
 }
+*/
 
 
 /*五日目 当たり判定*/
@@ -494,7 +496,35 @@ void my_turn_right(){
 	}
 }
 
-
+/*キー入力に当たり判定を組み込む*/
+void my_get_key(){
+	switch(getche())
+   {
+    case 0x1b:
+    switch(getche())
+    {
+			case 0x5b:
+			switch(getche()){
+			        case 0x41: 
+						my_turn_right();
+						break;
+		            case 0x44: 
+						my_collision_left();
+						if(collision_flag == 0){
+							block_x--;
+						}
+						break;
+		            case 0x43: 
+						my_collision_right();
+						if(collision_flag == 0){
+							block_x++;
+						}
+						break;
+			}
+    }
+    break;
+   }
+}
 
 int main(){
 
